@@ -36,15 +36,15 @@ pipeline {
             steps {
                 dir('3-java-jenkins-docker-app') {
                     script {
-                        withDockerRegistry(credentialsId: 'dockerhub-creds', toolName: 'docker') {
-                            sh 'docker build -t 3-java-jenkins-docker-app .'
-                            sh 'docker tag swiggy simbudevops/3-java-jenkins-docker-app:latest'
+                        withDockerRegistry(credentialsId: 'dockerhub-creds') {
+                            sh 'docker build -t simbudevops/3-java-jenkins-docker-app:latest .'
                             sh 'docker push simbudevops/3-java-jenkins-docker-app:latest'
                         }
                     }
                 }
             }
         }
+
         stage('Clean Work Space') {
             steps {
                 cleanWs()
