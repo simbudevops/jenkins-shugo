@@ -4,12 +4,13 @@ pipeline {
     stages {
         stage('Hello') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DockerPass', usernameVariable: 'DockerUser')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DockerPass', usernameVariable: 'DockerUser')]) {
                     echo "Hello World"
                     echo "Docker username: ${DockerUser}"
                     echo "Running build number: $BUILD_NUMBER"
-                    // You can use the credentials here, for example:
-                    // sh "docker login -u ${DockerUser} -p ${DockerPass}"
+
+                    // Example of using the credentials safely:
+                    // sh 'echo "$DockerPass" | docker login -u "$DockerUser" --password-stdin'
                 }
             }
         }
