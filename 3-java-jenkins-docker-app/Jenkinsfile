@@ -1,25 +1,55 @@
 pipeline {
     agent any
+
     stages {
-        stage('Build') {
+        stage('Clone Github Repository') {
             steps {
-                sh 'mvn clean package'
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/simbudevops/jenkins-shugo.git'
             }
         }
+
+        stage('Compile') {
+            steps {
+                dir('3-java-jenkins-docker-app') {
+                    sh 'mvn compile'
+                }
+            }
+        }
+
         stage('Test') {
             steps {
-                sh 'mvn test'
+                dir('3-java-jenkins-docker-app') {
+                    sh 'mvn test'
+                }
             }
         }
-        stage('Docker Build') {
+
+        stage('Build') {
             steps {
-                sh 'docker build -t java-jenkins-docker:latest .'
+                dir('3-java-jenkins-docker-app') {
+                    sh 'mvn clean package'
+                }
             }
         }
-        stage('Docker Run') {
+
+        stage('Docker Build & Push') {
             steps {
-                sh 'docker run --rm java-jenkins-docker:latest'
+                dir('3-java-jenkins-docker-app') {
+                    script {
+                        withDockerRegistry(credentialsId: 'dockerhub-creds', toolName: 'docker') {
+                            sh 'docker build -t 3-java-jenkins-docker-app .'
+                            sh 'docker tag swiggy simbudevops/3-java-jenkins-docker-app:latest'
+                            sh 'docker push simbudevops/3-java-jenkins-docker-app:latest'
+                        }
+                    }
+                }
             }
-        }        
+        }
+
+        stage('Clean Work Space') {
+            steps {
+                cleanWs()
+            }
+        }
     }
 }
