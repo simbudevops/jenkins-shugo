@@ -1,15 +1,13 @@
 pipeline {
-    agent { label 'worker-node' }
+    agent { label 'worker-1' }
 
     stages {
         stage('Build') {
             steps {
-                // Get some code from a GitHub repository
-                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/theshubhamgour/jenkins-tutorial.git'
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/simbudevops/jenkins-shugo.git'
 
-                // Run Maven on a Unix agent
                 dir('3-java-jenkins-docker-app') {
-                    sh "mvn clean package"
+                    sh 'mvn clean package'
                 }
             }
         }
@@ -17,7 +15,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('3-java-jenkins-docker-app') {
-                    sh "mvn test"
+                    sh 'mvn test'
                 }
             }
         }
@@ -25,7 +23,7 @@ pipeline {
         stage('Compile') {
             steps {
                 dir('3-java-jenkins-docker-app') {
-                    sh "mvn compile"
+                    sh 'mvn compile'
                 }
             }
         }
@@ -33,7 +31,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('3-java-jenkins-docker-app') {
-                    sh "docker build -t java-app ."
+                    sh 'docker build -t java-app .'
                 }
             }
         }
@@ -41,7 +39,7 @@ pipeline {
         stage('Docker Run') {
             steps {
                 dir('3-java-jenkins-docker-app') {
-                    sh "docker run java-app"
+                    sh 'docker run --rm java-app'
                 }
             }
         }
@@ -49,11 +47,29 @@ pipeline {
         stage('Docker Push') {
             steps {
                 dir('3-java-jenkins-docker-app') {
-                        sh "docker login -u theshubhamgour -p {password} --stdin"
-                        sh "docker tag java-app theshubhamgour/java-app:latest"
-                        sh "docker push theshubhamgour/java-app:latest"
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                                      usernameVariable: 'DOCKER_USER',
+                                                      passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker tag java-app simbudevops/java-app:latest
+                            docker push simbudevops/java-app:latest
+                        '''
                     }
                 }
             }
         }
     }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
