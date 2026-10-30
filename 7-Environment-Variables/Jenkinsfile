@@ -7,6 +7,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DockerPass', usernameVariable: 'DockerUser')]) {
                     echo "Hello World"
                     echo "Docker username: ${DockerUser}"
+                    echo "Running build number: $BUILD_NUMBER"
                     // You can use the credentials here, for example:
                     // sh "docker login -u ${DockerUser} -p ${DockerPass}"
                 }
