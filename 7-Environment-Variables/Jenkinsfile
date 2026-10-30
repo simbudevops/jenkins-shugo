@@ -8,6 +8,7 @@ pipeline {
                     echo "Hello World"
                     echo "Docker username: ${DockerUser}"
                     echo "Running build number: $BUILD_NUMBER"
+                    echo "Running build number: #$BUILD_NUMBER" and workspace is $WORKSAPCE
 
                     // Example of using the credentials safely:
                     // sh 'echo "$DockerPass" | docker login -u "$DockerUser" --password-stdin'
